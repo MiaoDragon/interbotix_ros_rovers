@@ -10,7 +10,7 @@ from interbotix_xs_modules.locobot import InterbotixLocobotXS
 # Then change to this directory and type 'python pick_place_no_armtag.py'
 
 def main():
-    bot = InterbotixLocobotXS("locobot_wx200", arm_model="mobile_wx200")
+    bot = InterbotixLocobotXS("locobot_wx250s", arm_model="locobot_wx250s")
     # move camera such that it's tilting down
     bot.camera.pan_tilt_move(0, 0.75)
     # get the positions of any clusters present w.r.t. the 'locobot/arm_base_link'

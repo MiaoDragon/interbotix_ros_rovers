@@ -6,8 +6,12 @@
   <arg name="external_urdf_loc"                 default=""/>
   <arg name="use_rviz"                          default="false"/>
   <arg name="use_camera"                        default="false"/>
-  <arg name="mode_configs"                      default="$(find interbotix_xslocobot_ros_control)/config/modes.yaml"/>
-  <arg name="dof"                               default="5"/>
+  <arg name="align_depth"                       default="false"/>
+  <arg name="mode_configs"                      default="$(find interbotix_xslocobot_ros_control)/config/modes_all.yaml"/>
+  <arg name="dof"                               default="6"/>
+  <arg name="use_base"                          default="true"/>
+  <arg name="use_dock"                          default="true"/>
+  <arg name="base_type"                         default="create3"/>
 
   <rosparam file="$(find interbotix_xslocobot_ros_control)/config/$(arg dof)dof_controllers.yaml" command="load" ns="$(arg robot_name)"/>
   <rosparam file="$(find interbotix_xslocobot_ros_control)/config/hardware.yaml" command="load" ns="$(arg robot_name)"/>
@@ -19,7 +23,11 @@
     <arg name="external_urdf_loc"                 value="$(arg external_urdf_loc)"/>
     <arg name="use_rviz"                          value="$(arg use_rviz)"/>
     <arg name="use_camera"                        value="$(arg use_camera)"/>
+    <arg name="align_depth"                       value="$(arg align_depth)"/>
     <arg name="mode_configs"                      value="$(arg mode_configs)"/>
+    <arg name="use_base"                            value="$(arg use_base)"/>
+    <arg name="use_dock"                            value="$(arg use_dock)"/>
+    <arg name="base_type"                           value="$(arg base_type)"/>
   </include>
 
   <node

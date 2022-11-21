@@ -13,6 +13,14 @@ groups:
     profile_acceleration: 15
     torque_enable: true
 
+# singles:
+#   gripper:
+#     operating_mode: position
+#     profile_type: velocity
+#     profile_velocity: 131
+#     profile_acceleration: 15
+#     torque_enable: true
+
 singles:
   gripper:
     operating_mode: pwm

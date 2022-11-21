@@ -13,6 +13,9 @@
   <arg name="controller"                        default="ps4"/>
   <arg name="launch_driver"                     default="true"/>
   <arg name="use_sim"                           default="false"/>
+  <arg name="load_configs"                      default="true"/>
+  <arg name="xs_sdk_type" value="xs_sdk" unless="$(arg use_sim)"/>
+  <arg name="xs_sdk_type" value="xs_sdk_sim" if="$(arg use_sim)"/>
 
   <arg if="$(eval robot_model == 'locobot_base')"     name="mode_type" value="base"/>
   <arg unless="$(eval robot_model == 'locobot_base')" name="mode_type" value="all"/>
@@ -30,6 +33,8 @@
     <arg name="use_camera"                        value="$(arg use_camera)"/>
     <arg name="mode_configs"                      value="$(arg mode_configs)"/>
     <arg name="use_sim"                           value="$(arg use_sim)"/>
+    <arg name="load_configs"                      value="$(arg load_configs)"/>
+
   </include>
 
   <node

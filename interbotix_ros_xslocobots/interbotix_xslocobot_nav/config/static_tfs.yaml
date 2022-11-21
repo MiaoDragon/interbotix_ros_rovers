@@ -1,0 +1,9 @@
+- frame_id: base_link
+  child_frame_id: locobot/base_link
+  x: 0
+  y: 0
+  z: 0
+  qx: 0
+  qy: 0
+  qz: 0
+  qw: 1

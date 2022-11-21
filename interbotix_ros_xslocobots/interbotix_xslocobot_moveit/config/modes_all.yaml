@@ -10,8 +10,8 @@ singles:
   gripper:
     operating_mode: position
     profile_type: velocity
-    profile_velocity: 131
-    profile_acceleration: 15
+    profile_velocity: 200 #131
+    profile_acceleration: 100 #15
     torque_enable: true
 
   pan:

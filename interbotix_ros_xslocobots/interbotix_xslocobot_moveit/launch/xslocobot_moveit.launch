@@ -7,10 +7,11 @@
   <arg name="external_srdf_loc"                 default=""/>
   <arg name="mode_configs"                      default="$(find interbotix_xslocobot_moveit)/config/modes_all.yaml"/>
   <arg name="use_gazebo"                        default="false"/>
-  <arg name="use_actual"                        default="false"/>
+  <arg name="use_actual"                        default="true"/>
   <arg name="use_fake"                          default="false"/>
-  <arg name="dof"                               default="5"/>
+  <arg name="dof"                               default="6"/>
   <arg name="use_camera"                        default="false"/>
+  <arg name="align_depth"                       default="false"/>
   <arg name="use_moveit_rviz"                   default="true"/>
   <arg name="world_name"                        default="$(find interbotix_xslocobot_gazebo)/worlds/xslocobot_gazebo.world"/>
 
@@ -30,6 +31,7 @@
     <arg name="external_urdf_loc"                 value="$(arg external_urdf_loc)"/>
     <arg name="use_rviz"                          value="false"/>
     <arg name="use_camera"                        value="$(arg use_camera)"/>
+    <arg name="align_depth"                       value="$(arg align_depth)"/>
     <arg name="mode_configs"                      value="$(arg mode_configs)"/>
     <arg name="dof"                               value="$(arg dof)"/>
   </include>

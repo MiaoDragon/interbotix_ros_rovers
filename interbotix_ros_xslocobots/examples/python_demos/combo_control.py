@@ -8,7 +8,7 @@ from interbotix_xs_modules.locobot import InterbotixLocobotXS
 # Then change to this directory and type 'python combo_control.py'
 
 def main():
-    locobot = InterbotixLocobotXS(robot_model="locobot_wx200", arm_model="mobile_wx200", use_move_base_action=True)
+    locobot = InterbotixLocobotXS(robot_model="locobot_wx250s", arm_model="mobile_wx250s", use_move_base_action=True)
     locobot.arm.set_ee_pose_components(x=0.3, z=0.2)
     locobot.arm.set_single_joint_position("waist", math.pi/4.0)
     locobot.gripper.open()

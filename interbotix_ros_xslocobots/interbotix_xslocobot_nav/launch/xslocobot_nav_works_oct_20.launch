@@ -2,27 +2,21 @@
 
   <arg name="robot_model"                       default=""/>
   <arg name="robot_name"                        default="locobot"/>
-  <arg name="arm_model"                         default="$(eval 'mobile_' + arg('robot_model').split('_')[1])"/>
+  <arg name="base_type"                         default="$(env INTERBOTIX_XSLOCOBOT_BASE_TYPE)"/> <!-- 'KOBUKI', 'CREATE3' -->
   <arg name="use_lidar"                         default="true"/>
-  <arg name="show_gripper_bar"                  default="true"/>
-  <arg name="show_gripper_fingers"              default="true"/>
+  <arg name="show_lidar"                        default="$(arg use_lidar)"/>
   <arg name="external_urdf_loc"                 default=""/>
+  <arg name="use_rviz"                          default="true"/>
   <arg name="localization"                      default="false"/>
   <arg name="rtabmap_args"                      default=""/>
   <arg name="use_rtabmapviz"                    default="false"/>
   <arg name="rtabmapviz_args"                   default=""/>
   <arg name="database_path"                     default="~/.ros/rtabmap.db"/>
   <arg name="camera_tilt_angle"                 default="0.2618"/>
-  <arg name="use_rviz"                          default="true"/>
-  <arg name="rviz_frame"                        default="map"/>
-  <arg name="world_name"                        default="$(find interbotix_xslocobot_gazebo)/worlds/xslocobot_gazebo.world"/>
-  <arg name="gui"                               default="true"/>
-  <arg name="debug"                             default="false"/>
-  <arg name="paused"                            default="true"/>
-  <arg name="recording"                         default="false"/>
-  <arg name="use_sim_time"                      default="true"/>
-  <arg name="dof"                               default="5"/>
-  <arg name="spawner_configuration"             default="-J tilt $(arg camera_tilt_angle)"/>
+  <arg name="launch_driver"                     default="true"/>
+  <!-- for create3 -->
+  <!-- <remap from="locobot/tf" to="tf"/>
+  <remap from="locobot/tf_static" to="tf_static"/> -->
 
   <arg     if="$(arg use_lidar)" name="rtabmap_default_args" default="$(arg rtabmap_args)
                                                                       --RGBD/NeighborLinkRefining true
@@ -56,25 +50,20 @@
                                                                       --Reg/Strategy 0
                                                                       --Mem/STMSize 30"/>
 
-  <include file="$(find interbotix_xslocobot_gazebo)/launch/xslocobot_gazebo.launch">
-    <arg name="robot_model"                       default="$(arg robot_model)"/>
-    <arg name="robot_name"                        default="$(arg robot_name)"/>
-    <arg name="arm_model"                         default="$(arg arm_model)"/>
-    <arg name="show_lidar"                        default="$(arg use_lidar)"/>
-    <arg name="show_gripper_bar"                  default="$(arg show_gripper_bar)"/>
-    <arg name="show_gripper_fingers"              default="$(arg show_gripper_fingers)"/>
-    <arg name="external_urdf_loc"                 default="$(arg external_urdf_loc)"/>
-    <arg name="use_rviz"                          default="$(arg use_rviz)"/>
-    <arg name="rviz_frame"                        default="$(arg rviz_frame)"/>
-    <arg name="world_name"                        default="$(arg world_name)"/>
-    <arg name="gui"                               default="$(arg gui)"/>
-    <arg name="debug"                             default="$(arg debug)"/>
-    <arg name="paused"                            default="$(arg paused)"/>
-    <arg name="recording"                         default="$(arg recording)"/>
-    <arg name="use_sim_time"                      default="$(arg use_sim_time)"/>
-    <arg name="use_position_controllers"          default="true"/>
-    <arg name="dof"                               default="$(arg dof)"/>
-    <arg name="spawner_configuration"             default="$(arg spawner_configuration)"/>
+  <include if="$(arg launch_driver)" file="$(find interbotix_xslocobot_control)/launch/xslocobot_control.launch">
+    <arg name="robot_model"                       value="$(arg robot_model)"/>
+    <arg name="robot_name"                        value="$(arg robot_name)"/>
+    <arg name="use_lidar"                         value="$(arg use_lidar)"/>
+    <arg name="show_lidar"                        value="$(arg show_lidar)"/>
+    <arg name="external_urdf_loc"                 value="$(arg external_urdf_loc)"/>
+    <arg name="use_rviz"                          value="$(arg use_rviz)"/>
+    <arg name="rviz_frame"                        value="map"/>
+    <!-- <arg name="rviz_frame"                        value="base_link"/> -->
+    <arg name="use_camera"                        value="true"/>
+    <arg name="align_depth"                       value="true"/>
+    <arg name="use_base"                          value="true"/>
+    <arg name="use_dock"                          value="true"/>
+    <arg name="base_type"                         value="$(arg base_type)"/>
   </include>
 
   <group ns="$(arg robot_name)/rtabmap">
@@ -84,12 +73,12 @@
       type="nodelet"
       name="rgbd_sync"
       output="screen"
-      args="standalone rtabmap_ros/rgbd_sync">
+      args="load rtabmap_ros/rgbd_sync /$(arg robot_name)/camera/realsense2_camera_manager">
       <param name="approx_sync"                   value="false"/>
       <remap from="rgb/image"                     to="/$(arg robot_name)/camera/color/image_raw"/>
       <remap from="depth/image"                   to="/$(arg robot_name)/camera/aligned_depth_to_color/image_raw"/>
       <remap from="rgb/camera_info"               to="/$(arg robot_name)/camera/color/camera_info"/>
-      <remap from="rgbd_image"                    to="rgbd_image"/>
+      <!-- <remap from="rgbd_image"                    to="rgbd_image"/> -->
     </node>
 
     <node
@@ -97,7 +86,7 @@
       type="nodelet"
       name="points_xyzrgb"
       output="screen"
-      args="standalone rtabmap_ros/point_cloud_xyzrgb">
+      args="load rtabmap_ros/point_cloud_xyzrgb /$(arg robot_name)/camera/realsense2_camera_manager">
       <param name="decimation"                    value="4"/>
       <param name="voxel_size"                    value="0.05"/>
       <param name="approx_sync"                   value="false"/>
@@ -109,8 +98,9 @@
       type="nodelet"
       name="obstacle_detection"
       output="screen"
-      args="standalone rtabmap_ros/obstacles_detection">
+      args="load rtabmap_ros/obstacles_detection /$(arg robot_name)/camera/realsense2_camera_manager">
       <param name="wait_for_transform"            value="true"/>
+      <!-- <param name="frame_id"                      value="base_link"/> -->
       <param name="frame_id"                      value="$(arg robot_name)/base_footprint"/>
       <remap from="cloud"                         to="depth/color/voxels"/>
       <remap from="ground"                        to="depth/color/ground"/>
@@ -132,14 +122,21 @@
       <param name="subscribe_scan_descriptor"     value="false"/>
       <param name="subscribe_user_data"           value="false"/>
       <param name="subscribe_odom_info"           value="false"/>
+      <!-- <param name="frame_id"                      value="base_link"/> -->
       <param name="frame_id"                      value="$(arg robot_name)/base_footprint"/>
       <param name="map_frame_id"                  value="map"/>
-      <param name="odom_frame_id"                 value="$(arg robot_name)/odom"/>
+      <!-- <param name="map_frame_id"                  value="base_link"/> -->
+      <!-- <param name="odom_frame_id"                 value="base_link"/> -->
+      <!-- <param name="odom_frame_id"                 value="$(arg robot_name)/odom"/> -->
+      <param name="odom_frame_id"                 value="odom"/>
+
       <param name="publish_tf"                    value="true"/>
+      <param name="tf_delay"                      value="0.8"/>
       <param name="odom_tf_angular_variance"      value="0.05"/>
       <param name="odom_tf_linear_variance"       value="0.1"/>
       <param name="odom_sensor_sync"              value="false"/>
-      <param name="wait_for_transform_duration"   value="0.2"/>
+      <param name="wait_for_transform_duration"   value="0.8"/>
+      <!-- <param name="wait_for_transform_duration"   value="0.2"/> -->
       <param name="database_path"                 value="$(arg database_path)"/>
       <param name="approx_sync"                   value="true"/>
       <param name="queue_size"                    value="10"/>
@@ -148,9 +145,15 @@
       <param name="Mem/InitWMWithAllNodes"        value="$(arg localization)"/>
       <param     if="$(arg localization)" name="Mem/IncrementalMemory" value="false"/>
       <param unless="$(arg localization)" name="Mem/IncrementalMemory" value="true"/>
+
+      <param name="map_cleanup"                   value="false"/>
       <remap from="scan"                          to="/$(arg robot_name)/scan"/>
       <remap from="initialpose"                   to="/$(arg robot_name)/initialpose"/>
       <remap from="goal_out"                      to="/$(arg robot_name)/move_base_simple/goal"/>
+      <remap from="cmd_vel"                         to="/locobot/cmd_vel"/>
+      <!-- <remap from="map"                             to="/locobot/rtabmap/grid_map"/> -->
+      <remap from="odom"                            to="/locobot/odom"/>
+
     </node>
 
     <node if="$(arg use_rtabmapviz)"
@@ -162,9 +165,19 @@
       <param name="subscribe_rgbd"                value="true"/>
       <param name="subscribe_scan"                value="$(arg use_lidar)"/>
       <param name="frame_id"                      value="$(arg robot_name)/base_footprint"/>
-      <param name="odom_frame_id"                 value="$(arg robot_name)/odom"/>
+      <!-- <param name="frame_id"                      value="base_link"/> -->
+
+      <!-- <param name="odom_frame_id"                      value="base_link"/> -->
+
+      <!-- <param name="odom_frame_id"                 value="$(arg robot_name)/odom"/> -->
+      <param name="odom_frame_id"                 value="odom"/>
+
       <param name="wait_for_transform"            value="true"/>
       <remap from="scan"                          to="/$(arg robot_name)/scan"/>
+
+      <remap from="cmd_vel"                         to="/locobot/cmd_vel"/>
+      <remap from="map"                             to="/locobot/rtabmap/grid_map"/>
+      <remap from="odom"                            to="/locobot/odom"/>
     </node>
   </group>
 
@@ -186,12 +199,36 @@
     <rosparam file="$(find interbotix_xslocobot_nav)/config/move_base_params.yaml"      command="load"/>
 
     <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_footprint"/>
-    <param name="local_costmap/global_frame"      value="$(arg robot_name)/odom"/>
-    <param name="local_costmap/robot_base_frame"  value="$(arg robot_name)/base_footprint"/>
+    <!-- <param name="global_costmap/robot_base_frame" value="base_link"/> -->
 
-    <remap from="cmd_vel"                         to="mobile_base/commands/velocity"/>
-    <remap from="map"                             to="rtabmap/grid_map"/>
-    <remap from="odom"                            to="mobile_base/odom"/>
+    <!-- <param name="local_costmap/global_frame"      value="$(arg robot_name)/odom"/> -->
+    <!-- <param name="local_costmap/global_frame"      value="odom"/> -->
+    <param name="local_costmap/global_frame"      value="map"/>
+
+    <!-- <param name="local_costmap/global_frame"      value="base_link"/> -->
+
+    <param name="local_costmap/robot_base_frame"  value="$(arg robot_name)/base_footprint"/>
+    <!-- <param name="local_costmap/robot_base_frame"  value="base_link"/> -->
+
+    <remap from="cmd_vel"                         to="/locobot/cmd_vel"/>
+    <remap from="map"                             to="/locobot/rtabmap/grid_map"/>
+    <remap from="odom"                            to="/locobot/odom"/>
+    <!-- <remap from="odom"                            to="mobile_base/odom"/> -->
+
   </node>
+
+  <node
+    pkg="rostopic"
+    type="rostopic"
+    name="camera_tilt"
+    args="pub -1 commands/joint_group interbotix_xs_msgs/JointGroupCommand --latch '{name: 'camera', cmd: [0, $(arg camera_tilt_angle)]}'"
+    ns="$(arg robot_name)">
+  </node>
+
+  <!-- <include if="$(eval arg('base_type') == 'create3')" file="$(find interbotix_perception_modules)/launch/static_transform_pub.launch">
+      <arg name="load_transforms"             value="true"/>
+      <arg name="save_transforms"             value="false"/>
+      <arg name="transform_filepath"          value="$(find interbotix_xslocobot_nav)/config/static_tfs.yaml"/>
+  </include> -->
 
 </launch>

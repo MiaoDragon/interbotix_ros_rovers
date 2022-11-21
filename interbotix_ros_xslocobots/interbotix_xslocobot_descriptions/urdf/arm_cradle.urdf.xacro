@@ -35,10 +35,7 @@
 
     </xacro:if>
 
-    <gazebo reference="arm_cradle">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
-
   </xacro:macro>
+
 
 </robot>
